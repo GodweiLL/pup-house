@@ -1,15 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Settings } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { PixelDog } from '@/components/PixelDog';
 import { ChatContainer } from '@/components/Chat/ChatContainer';
-import { NotebookPanel } from '@/components/Notebook/NotebookPanel';
+import { NotebookList } from '@/components/Notebook/NotebookList';
 import { StatusCard } from '@/components/Status/StatusCard';
 import { usePetStore } from '@/stores/petStore';
 import { useChatStore } from '@/stores/chatStore';
-import { useNotebookStore } from '@/stores/notebookStore';
 
 function generateThreadId(): string {
   return `thread-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -20,7 +17,6 @@ export default function Home() {
   const mood = usePetStore((s) => s.mood);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const currentThinking = useChatStore((s) => s.currentThinking);
-  const fetchEntries = useNotebookStore((s) => s.fetchEntries);
 
   useEffect(() => {
     const stored = localStorage.getItem('pixel-pup-thread-id');
@@ -29,8 +25,7 @@ export default function Home() {
       localStorage.setItem('pixel-pup-thread-id', id);
     }
     setThreadId(id);
-    fetchEntries(id);
-  }, [fetchEntries]);
+  }, []);
 
   if (!threadId) {
     return (
@@ -43,39 +38,36 @@ export default function Home() {
   const isThinking = isStreaming && !!currentThinking;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold tracking-tight">像素崽</span>
-            <span className="text-xs text-muted-foreground">Pixel Pup</span>
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-6xl mx-auto">
+        <header className="mb-6">
+          <h1 className="text-2xl font-bold text-foreground">像素崽</h1>
+          <p className="text-sm text-muted-foreground">Pixel Pup - 你的 AI 电子宠物</p>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6 h-[calc(100vh-140px)]">
+          <div className="flex flex-col gap-4">
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 border border-indigo-100">
+              <PixelDog
+                mood={mood}
+                size="lg"
+                isThinking={isThinking}
+                thinkingContent={currentThinking}
+              />
+            </div>
+
+            <StatusCard />
+
+            <div className="flex-1 min-h-0">
+              <NotebookList threadId={threadId} />
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <NotebookPanel threadId={threadId} />
-            <Button variant="ghost" size="icon">
-              <Settings className="w-5 h-5" />
-            </Button>
+          <div className="min-h-0">
+            <ChatContainer threadId={threadId} />
           </div>
         </div>
-      </header>
-
-      <main className="flex-1 container mx-auto px-4 py-6 flex flex-col gap-4 max-w-2xl">
-        <div className="flex flex-col items-center pt-16 pb-6 bg-card/30 rounded-lg border border-border">
-          <PixelDog
-            mood={mood}
-            size="lg"
-            isThinking={isThinking}
-            thinkingContent={currentThinking}
-          />
-        </div>
-
-        <StatusCard />
-
-        <div className="flex-1 min-h-[400px]">
-          <ChatContainer threadId={threadId} />
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

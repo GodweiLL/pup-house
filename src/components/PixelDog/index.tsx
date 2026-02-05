@@ -16,11 +16,12 @@ interface PixelDogProps {
 const SIZE_CONFIG = {
   sm: { pixelSize: 6, canvasSize: 96 },
   md: { pixelSize: 10, canvasSize: 160 },
-  lg: { pixelSize: 14, canvasSize: 224 },
+  lg: { pixelSize: 12, canvasSize: 192 },
 };
 
 export function PixelDog({ mood, size = 'md', isThinking, thinkingContent }: PixelDogProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const thinkingRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef(0);
   const animationRef = useRef<number>(0);
 
@@ -53,7 +54,7 @@ export function PixelDog({ mood, size = 'md', isThinking, thinkingContent }: Pix
     ctx.imageSmoothingEnabled = false;
 
     let lastTime = 0;
-    const fps = isThinking ? 3 : 8;
+    const fps = isThinking ? 2 : 8;
     const frameInterval = 1000 / fps;
 
     const animate = (time: number) => {
@@ -79,39 +80,14 @@ export function PixelDog({ mood, size = 'md', isThinking, thinkingContent }: Pix
     frameRef.current = 0;
   }, [isThinking]);
 
-  return (
-    <div className="relative flex flex-col items-center">
-      <AnimatePresence>
-        {isThinking && thinkingContent && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.9 }}
-            className="absolute -top-4 left-1/2 -translate-x-1/2 -translate-y-full z-10 w-64"
-          >
-            <div className="relative">
-              <div className="p-3 rounded-2xl bg-violet-950/80 border border-violet-500/30 backdrop-blur-sm shadow-lg shadow-violet-500/10">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <Sparkles className="w-3 h-3 text-violet-400" />
-                  <span className="text-[10px] font-medium text-violet-400 uppercase tracking-wider">
-                    思考中
-                  </span>
-                </div>
-                <p className="text-xs text-violet-200/90 leading-relaxed max-h-20 overflow-y-auto">
-                  {thinkingContent}
-                  <motion.span
-                    animate={{ opacity: [1, 0] }}
-                    transition={{ duration: 0.5, repeat: Infinity }}
-                    className="inline-block w-1 h-3 bg-violet-400 ml-0.5 align-middle"
-                  />
-                </p>
-              </div>
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-violet-950/80" />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+  useEffect(() => {
+    if (thinkingRef.current && isThinking) {
+      thinkingRef.current.scrollTop = thinkingRef.current.scrollHeight;
+    }
+  }, [thinkingContent, isThinking]);
 
+  return (
+    <div className="relative flex items-start gap-3">
       <div
         className={`relative ${isThinking ? '' : moodConfig.animation || ''}`}
         style={{ imageRendering: 'pixelated' }}
@@ -120,10 +96,42 @@ export function PixelDog({ mood, size = 'md', isThinking, thinkingContent }: Pix
           ref={canvasRef}
           width={config.canvasSize}
           height={config.canvasSize}
-          className="rounded-lg"
+          className="rounded-2xl"
           style={{ imageRendering: 'pixelated' }}
         />
       </div>
+
+      <AnimatePresence>
+        {isThinking && thinkingContent && (
+          <motion.div
+            initial={{ opacity: 0, x: -10, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -10, scale: 0.95 }}
+            className="relative max-w-[200px]"
+          >
+            <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-indigo-100" />
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 shadow-sm">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                <span className="text-[11px] font-medium text-indigo-500">
+                  思考中...
+                </span>
+              </div>
+              <div
+                ref={thinkingRef}
+                className="text-xs text-gray-600 leading-relaxed max-h-[120px] overflow-y-auto pr-1"
+              >
+                {thinkingContent}
+                <motion.span
+                  animate={{ opacity: [1, 0] }}
+                  transition={{ duration: 0.5, repeat: Infinity }}
+                  className="inline-block w-1 h-3 bg-indigo-400 ml-0.5 align-middle rounded-full"
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
