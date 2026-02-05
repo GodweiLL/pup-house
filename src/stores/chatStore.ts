@@ -65,10 +65,15 @@ export const useChatStore = create<ChatState>((set) => ({
       const lastIndex = messages.length - 1;
       if (lastIndex >= 0 && messages[lastIndex].role === 'assistant') {
         const existing = messages[lastIndex].toolCalls || [];
-        messages[lastIndex] = {
-          ...messages[lastIndex],
-          toolCalls: [...existing, toolCall],
-        };
+        const isDuplicate = existing.some(
+          (t) => t.name === toolCall.name && JSON.stringify(t.args) === JSON.stringify(toolCall.args)
+        );
+        if (!isDuplicate) {
+          messages[lastIndex] = {
+            ...messages[lastIndex],
+            toolCalls: [...existing, toolCall],
+          };
+        }
       }
       return { messages };
     }),

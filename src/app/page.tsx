@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { PixelDog } from '@/components/PixelDog';
 import { ChatContainer } from '@/components/Chat/ChatContainer';
 import { NotebookList } from '@/components/Notebook/NotebookList';
@@ -17,6 +19,7 @@ export default function Home() {
   const mood = usePetStore((s) => s.mood);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const currentThinking = useChatStore((s) => s.currentThinking);
+  const clearMessages = useChatStore((s) => s.clearMessages);
 
   useEffect(() => {
     const stored = localStorage.getItem('pixel-pup-thread-id');
@@ -26,6 +29,13 @@ export default function Home() {
     }
     setThreadId(id);
   }, []);
+
+  const handleNewChat = useCallback(() => {
+    const newId = generateThreadId();
+    localStorage.setItem('pixel-pup-thread-id', newId);
+    clearMessages();
+    setThreadId(newId);
+  }, [clearMessages]);
 
   if (!threadId) {
     return (
@@ -40,9 +50,20 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto">
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">像素崽</h1>
-          <p className="text-sm text-muted-foreground">Pixel Pup - 你的 AI 电子宠物</p>
+        <header className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">像素崽</h1>
+            <p className="text-sm text-muted-foreground">Pixel Pup - 你的 AI 电子宠物</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNewChat}
+            className="gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            新对话
+          </Button>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6 h-[calc(100vh-140px)]">

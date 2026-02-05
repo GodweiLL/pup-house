@@ -29,7 +29,7 @@ export const useNotebookStore = create<NotebookState>((set) => ({
       const res = await fetch(`${API_BASE}/notebook/${threadId}`);
       if (!res.ok) throw new Error('Failed to fetch notebook');
       const data = await res.json();
-      set({ entries: data.entries || [], isLoading: false });
+      set({ entries: data.notebook || [], isLoading: false });
     } catch (err) {
       set({ error: (err as Error).message, isLoading: false });
     }
@@ -41,11 +41,11 @@ export const useNotebookStore = create<NotebookState>((set) => ({
       const res = await fetch(`${API_BASE}/notebook/${threadId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, source: 'human' }),
+        body: JSON.stringify({ content }),
       });
       if (!res.ok) throw new Error('Failed to add entry');
       const data = await res.json();
-      set({ entries: data.entries || [], isLoading: false });
+      set({ entries: data.notebook || [], isLoading: false });
     } catch (err) {
       set({ error: (err as Error).message, isLoading: false });
     }
@@ -61,7 +61,7 @@ export const useNotebookStore = create<NotebookState>((set) => ({
       });
       if (!res.ok) throw new Error('Failed to update entry');
       const data = await res.json();
-      set({ entries: data.entries || [], isLoading: false });
+      set({ entries: data.notebook || [], isLoading: false });
     } catch (err) {
       set({ error: (err as Error).message, isLoading: false });
     }
@@ -75,7 +75,7 @@ export const useNotebookStore = create<NotebookState>((set) => ({
       });
       if (!res.ok) throw new Error('Failed to delete entry');
       const data = await res.json();
-      set({ entries: data.entries || [], isLoading: false });
+      set({ entries: data.notebook || [], isLoading: false });
     } catch (err) {
       set({ error: (err as Error).message, isLoading: false });
     }

@@ -3,9 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useChatStore } from '@/stores/chatStore';
 import { usePetStore } from '@/stores/petStore';
+import { useNotebookStore } from '@/stores/notebookStore';
 import type { WSMessageType } from '@/types';
 
 const WS_BASE = process.env.NEXT_PUBLIC_WS_BASE || 'ws://localhost:8000';
+
+const NOTEBOOK_TOOL_NAMES = ['read_notebook', 'add_to_notebook', 'update_notebook', 'remove_from_notebook'];
 
 export function useWebSocket(threadId: string) {
   const wsRef = useRef<WebSocket | null>(null);
@@ -22,6 +25,7 @@ export function useWebSocket(threadId: string) {
   } = useChatStore();
 
   const { setOnline, setMood } = usePetStore();
+  const { fetchEntries } = useNotebookStore();
 
   const connect = useCallback(() => {
     if (!threadId) return;
@@ -64,6 +68,9 @@ export function useWebSocket(threadId: string) {
             if (data.name === 'update_mood' && data.args.mood) {
               setMood(data.args.mood as 'happy' | 'neutral' | 'sad' | 'excited' | 'sleepy');
             }
+            if (NOTEBOOK_TOOL_NAMES.includes(data.name)) {
+              setTimeout(() => fetchEntries(threadId), 500);
+            }
             break;
 
           case 'done':
@@ -74,7 +81,7 @@ export function useWebSocket(threadId: string) {
         // Ignore parse errors
       }
     };
-  }, [threadId, addMessage, appendToLastMessage, appendThinking, addToolCall, setStreaming, finishStreaming, setOnline, setMood]);
+  }, [threadId, addMessage, appendToLastMessage, appendThinking, addToolCall, setStreaming, finishStreaming, setOnline, setMood, fetchEntries]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
