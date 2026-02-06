@@ -9,6 +9,7 @@ interface NotebookState {
   isLoading: boolean;
   error: string | null;
   setOpen: (isOpen: boolean) => void;
+  clearEntries: () => void;
   fetchEntries: (threadId: string) => Promise<void>;
   addEntry: (threadId: string, content: string) => Promise<void>;
   updateEntry: (threadId: string, index: number, content: string) => Promise<void>;
@@ -22,6 +23,8 @@ export const useNotebookStore = create<NotebookState>((set) => ({
   error: null,
 
   setOpen: (isOpen) => set({ isOpen }),
+
+  clearEntries: () => set({ entries: [], error: null }),
 
   fetchEntries: async (threadId) => {
     set({ isLoading: true, error: null });

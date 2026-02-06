@@ -9,6 +9,7 @@ import { NotebookList } from '@/components/Notebook/NotebookList';
 import { StatusCard } from '@/components/Status/StatusCard';
 import { usePetStore } from '@/stores/petStore';
 import { useChatStore } from '@/stores/chatStore';
+import { useNotebookStore } from '@/stores/notebookStore';
 
 function generateThreadId(): string {
   return `thread-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -20,6 +21,7 @@ export default function Home() {
   const isStreaming = useChatStore((s) => s.isStreaming);
   const currentThinking = useChatStore((s) => s.currentThinking);
   const clearMessages = useChatStore((s) => s.clearMessages);
+  const clearEntries = useNotebookStore((s) => s.clearEntries);
 
   useEffect(() => {
     const stored = localStorage.getItem('pixel-pup-thread-id');
@@ -34,8 +36,9 @@ export default function Home() {
     const newId = generateThreadId();
     localStorage.setItem('pixel-pup-thread-id', newId);
     clearMessages();
+    clearEntries();
     setThreadId(newId);
-  }, [clearMessages]);
+  }, [clearMessages, clearEntries]);
 
   if (!threadId) {
     return (
@@ -80,12 +83,12 @@ export default function Home() {
             <StatusCard />
 
             <div className="flex-1 min-h-0">
-              <NotebookList threadId={threadId} />
+              <NotebookList key={threadId} threadId={threadId} />
             </div>
           </div>
 
           <div className="min-h-0">
-            <ChatContainer threadId={threadId} />
+            <ChatContainer key={threadId} threadId={threadId} />
           </div>
         </div>
       </div>
