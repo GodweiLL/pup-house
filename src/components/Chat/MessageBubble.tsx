@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import type { Message } from '@/types';
 import { cn } from '@/lib/utils';
 import { NotebookToolBubble, isNotebookTool } from './NotebookToolBubble';
+import { EmotionToolBubble, isEmotionTool } from './EmotionToolBubble';
 
 interface MessageBubbleProps {
   message: Message;
@@ -14,7 +15,8 @@ export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
   const isUser = message.role === 'user';
 
   const notebookTools = message.toolCalls?.filter((t) => isNotebookTool(t.name)) || [];
-  const otherTools = message.toolCalls?.filter((t) => !isNotebookTool(t.name)) || [];
+  const emotionTools = message.toolCalls?.filter((t) => isEmotionTool(t.name)) || [];
+  const otherTools = message.toolCalls?.filter((t) => !isNotebookTool(t.name) && !isEmotionTool(t.name)) || [];
 
   return (
     <div
@@ -53,6 +55,14 @@ export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
             </p>
           </div>
         </motion.div>
+      )}
+
+      {emotionTools.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {emotionTools.map((tool, idx) => (
+            <EmotionToolBubble key={`emotion-${idx}`} toolCall={tool} />
+          ))}
+        </div>
       )}
 
       {otherTools.length > 0 && (

@@ -15,6 +15,8 @@ const COLORS = {
   eye: '#2d1810',
   eyeWhite: '#ffffff',
   blush: '#FFB6C1',
+  angry: '#FF4444',
+  heart: '#FF69B4',
 };
 
 const EMPTY = null;
@@ -26,6 +28,8 @@ const T = COLORS.tongue;
 const E = COLORS.eye;
 const W = COLORS.eyeWhite;
 const B = COLORS.blush;
+const A = COLORS.angry;
+const H = COLORS.heart;
 
 // 16x16 pixel dog base frame
 const BASE_DOG: PixelColor[][] = [
@@ -159,12 +163,62 @@ export const THINKING_FRAMES: DogFrame[] = [
   { pixels: THINKING_DOG_2 },
 ];
 
+// Angry - furrowed brows and red face
+const ANGRY_DOG: PixelColor[][] = BASE_DOG.map((row, y) =>
+  row.map((pixel, x) => {
+    // Red tint on face
+    if (y === 4 && (x === 4 || x === 11)) return A;
+    if (y === 5 && (x === 3 || x === 12)) return A;
+    return pixel;
+  })
+);
+
+const ANGRY_FRAMES: DogFrame[] = [
+  { pixels: ANGRY_DOG },
+];
+
+// Surprised - wide eyes
+const SURPRISED_DOG: PixelColor[][] = BASE_DOG.map((row, y) =>
+  row.map((pixel, x) => {
+    // Bigger eyes
+    if (y === 4 && (x === 5 || x === 6 || x === 9 || x === 10)) return W;
+    if (y === 5 && (x === 4 || x === 7 || x === 8 || x === 11)) return W;
+    if (y === 5 && (x === 6 || x === 10)) return E;
+    return pixel;
+  })
+);
+
+const SURPRISED_FRAMES: DogFrame[] = [
+  { pixels: SURPRISED_DOG },
+];
+
+// Love - heart eyes and blush
+const LOVE_DOG: PixelColor[][] = BASE_DOG.map((row, y) =>
+  row.map((pixel, x) => {
+    // Heart eyes
+    if (y === 5 && (x === 5 || x === 6 || x === 9 || x === 10)) return H;
+    // Blush
+    if (y === 6 && (x === 3 || x === 4)) return B;
+    if (y === 6 && (x === 11 || x === 12)) return B;
+    // Tongue
+    if (y === 9 && (x === 7 || x === 8)) return T;
+    return pixel;
+  })
+);
+
+const LOVE_FRAMES: DogFrame[] = [
+  { pixels: LOVE_DOG },
+];
+
 export const MOOD_ANIMATIONS: Record<MoodType, DogFrame[]> = {
   neutral: NEUTRAL_FRAMES,
   happy: HAPPY_FRAMES,
   sad: SAD_FRAMES,
   excited: EXCITED_FRAMES,
   sleepy: SLEEPY_FRAMES,
+  angry: ANGRY_FRAMES,
+  surprised: SURPRISED_FRAMES,
+  love: LOVE_FRAMES,
 };
 
 export const MOOD_CONFIG: Record<MoodType, {
@@ -177,4 +231,7 @@ export const MOOD_CONFIG: Record<MoodType, {
   sad: { label: '难过', color: '#3b82f6' },
   excited: { label: '兴奋', color: '#f59e0b', animation: 'animate-pixel-bounce' },
   sleepy: { label: '困了', color: '#8b5cf6' },
+  angry: { label: '生气', color: '#ef4444', animation: 'animate-pixel-shake' },
+  surprised: { label: '惊讶', color: '#06b6d4' },
+  love: { label: '爱心', color: '#ec4899', animation: 'animate-pixel-bounce' },
 };

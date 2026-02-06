@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useChatStore } from '@/stores/chatStore';
 import { usePetStore } from '@/stores/petStore';
 import { useNotebookStore } from '@/stores/notebookStore';
-import type { WSMessageType } from '@/types';
+import type { WSMessageType, MoodType } from '@/types';
 
 const WS_BASE = process.env.NEXT_PUBLIC_WS_BASE || 'ws://localhost:8000';
 
 const NOTEBOOK_TOOL_NAMES = ['read_notebook', 'add_to_notebook', 'update_notebook', 'remove_from_notebook'];
+const EMOTION_TOOL_NAME = 'express_emotion';
 
 export function useWebSocket(threadId: string) {
   const wsRef = useRef<WebSocket | null>(null);
@@ -22,6 +23,7 @@ export function useWebSocket(threadId: string) {
     addToolCall,
     setStreaming,
     finishStreaming,
+    setThinking,
   } = useChatStore();
 
   const { setOnline, setMood } = usePetStore();
@@ -60,13 +62,17 @@ export function useWebSocket(threadId: string) {
             break;
 
           case 'token':
+            setThinking('');
             appendToLastMessage(data.content);
             break;
 
           case 'tool_call':
             addToolCall({ name: data.name, args: data.args });
             if (data.name === 'update_mood' && data.args.mood) {
-              setMood(data.args.mood as 'happy' | 'neutral' | 'sad' | 'excited' | 'sleepy');
+              setMood(data.args.mood as MoodType);
+            }
+            if (data.name === EMOTION_TOOL_NAME && data.args.emotion) {
+              setMood(data.args.emotion as MoodType);
             }
             if (NOTEBOOK_TOOL_NAMES.includes(data.name)) {
               setTimeout(() => fetchEntries(threadId), 500);
@@ -81,7 +87,7 @@ export function useWebSocket(threadId: string) {
         // Ignore parse errors
       }
     };
-  }, [threadId, addMessage, appendToLastMessage, appendThinking, addToolCall, setStreaming, finishStreaming, setOnline, setMood, fetchEntries]);
+  }, [threadId, addMessage, appendToLastMessage, appendThinking, addToolCall, setStreaming, finishStreaming, setOnline, setMood, fetchEntries, setThinking]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {

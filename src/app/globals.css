@@ -99,6 +99,12 @@
   50% { transform: rotate(8deg); }
 }
 
+@keyframes pixel-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
@@ -110,6 +116,10 @@
 
 .animate-pixel-wag {
   animation: pixel-wag 0.4s ease-in-out infinite;
+}
+
+.animate-pixel-shake {
+  animation: pixel-shake 0.2s ease-in-out infinite;
 }
 
 .animate-float {

@@ -1,4 +1,4 @@
-export type MoodType = 'happy' | 'neutral' | 'sad' | 'excited' | 'sleepy';
+export type MoodType = 'happy' | 'neutral' | 'sad' | 'excited' | 'sleepy' | 'angry' | 'surprised' | 'love';
 
 export interface NotebookEntry {
   content: string;
