@@ -18,27 +18,26 @@ function generateThreadId(): string {
 export default function Home() {
   const [threadId, setThreadId] = useState('');
   const mood = usePetStore((s) => s.mood);
+  const resetMood = usePetStore((s) => s.resetMood);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const currentThinking = useChatStore((s) => s.currentThinking);
   const clearMessages = useChatStore((s) => s.clearMessages);
   const clearEntries = useNotebookStore((s) => s.clearEntries);
 
   useEffect(() => {
-    const stored = localStorage.getItem('pixel-pup-thread-id');
-    const id = stored || generateThreadId();
-    if (!stored) {
-      localStorage.setItem('pixel-pup-thread-id', id);
-    }
-    setThreadId(id);
-  }, []);
+    // 每次刷新都生成新的 thread_id
+    const newId = generateThreadId();
+    setThreadId(newId);
+    resetMood();
+  }, [resetMood]);
 
   const handleNewChat = useCallback(() => {
     const newId = generateThreadId();
-    localStorage.setItem('pixel-pup-thread-id', newId);
     clearMessages();
     clearEntries();
+    resetMood();
     setThreadId(newId);
-  }, [clearMessages, clearEntries]);
+  }, [clearMessages, clearEntries, resetMood]);
 
   if (!threadId) {
     return (

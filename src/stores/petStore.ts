@@ -8,6 +8,7 @@ interface PetState {
   setMood: (mood: MoodType) => void;
   setAffinity: (value: number) => void;
   setOnline: (value: boolean) => void;
+  resetMood: () => void;
 }
 
 export const usePetStore = create<PetState>((set) => ({
@@ -17,4 +18,5 @@ export const usePetStore = create<PetState>((set) => ({
   setMood: (mood) => set({ mood }),
   setAffinity: (affinity) => set({ affinity: Math.max(0, Math.min(100, affinity)) }),
   setOnline: (isOnline) => set({ isOnline }),
+  resetMood: () => set({ mood: 'neutral' }),
 }));
