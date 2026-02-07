@@ -1,5 +1,7 @@
 export type MoodType = 'happy' | 'neutral' | 'sad' | 'excited' | 'sleepy' | 'angry' | 'surprised' | 'love';
 
+export type AgentType = 'pixel-pup' | 'memory';
+
 export interface NotebookEntry {
   content: string;
   source: 'agent' | 'human';
@@ -21,7 +23,8 @@ export interface Message {
 }
 
 export type WSMessageType =
-  | { type: 'thinking'; content: string }
-  | { type: 'token'; content: string }
-  | { type: 'tool_call'; name: string; args: Record<string, unknown> }
-  | { type: 'done' };
+  | { type: 'thinking'; content: string; agent_type?: AgentType }
+  | { type: 'token'; content: string; agent_type?: AgentType }
+  | { type: 'tool_call'; name: string; args: Record<string, unknown>; agent_type?: AgentType }
+  | { type: 'done'; agent_type?: AgentType }
+  | { type: 'error'; message: string; agent_type?: AgentType };

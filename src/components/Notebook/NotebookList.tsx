@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Plus, Pencil, Trash2, User, Bot, X, Check } from 'lucide-react';
+import { BookOpen, Plus, Pencil, Trash2, User, Bot, X, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotebookStore } from '@/stores/notebookStore';
+import { useMemoryAgent } from '@/hooks/useMemoryAgent';
+import { MemoryBuildOverlay } from './MemoryBuildOverlay';
 import { cn } from '@/lib/utils';
 
 interface NotebookListProps {
@@ -27,6 +29,13 @@ export function NotebookList({ threadId }: NotebookListProps) {
     updateEntry,
     deleteEntry,
   } = useNotebookStore();
+
+  const {
+    isProcessing,
+    currentTool,
+    isComplete,
+    buildMemory,
+  } = useMemoryAgent(threadId);
 
   useEffect(() => {
     if (threadId) {
@@ -61,8 +70,14 @@ export function NotebookList({ threadId }: NotebookListProps) {
     }
   };
 
+  const handleBuildMemory = () => {
+    if (entries.length > 0) {
+      buildMemory(entries);
+    }
+  };
+
   return (
-    <div className="h-full flex flex-col bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+    <div className="h-full flex flex-col bg-card rounded-2xl border border-border shadow-sm overflow-hidden relative">
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-primary" />
@@ -73,14 +88,28 @@ export function NotebookList({ threadId }: NotebookListProps) {
             </span>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => setIsAdding(true)}
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {entries.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-amber-500 hover:text-amber-600 hover:bg-amber-50"
+              onClick={handleBuildMemory}
+              disabled={isProcessing}
+              title="整理记忆"
+            >
+              <Sparkles className="w-4 h-4" />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setIsAdding(true)}
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       <ScrollArea className="flex-1">
@@ -221,6 +250,17 @@ export function NotebookList({ threadId }: NotebookListProps) {
           )}
         </div>
       </ScrollArea>
+
+      {/* 整理记忆遮罩 */}
+      <AnimatePresence>
+        {(isProcessing || isComplete) && (
+          <MemoryBuildOverlay
+            isProcessing={isProcessing}
+            currentTool={currentTool || undefined}
+            isComplete={isComplete}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
