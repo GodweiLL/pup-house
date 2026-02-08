@@ -6,6 +6,8 @@ import type { Message } from '@/types';
 import { cn } from '@/lib/utils';
 import { NotebookToolBubble, isNotebookTool } from './NotebookToolBubble';
 import { EmotionToolBubble, isEmotionTool } from './EmotionToolBubble';
+import { KnowledgeGraphToolBubble, isKnowledgeGraphTool } from './KnowledgeGraphToolBubble';
+import { ImportantContextToolBubble, isImportantContextTool } from './ImportantContextToolBubble';
 import { usePetStore } from '@/stores/petStore';
 
 interface MessageBubbleProps {
@@ -25,8 +27,14 @@ export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
   const notebookTools = message.toolCalls?.filter((t) => isNotebookTool(t.name)) || [];
   const emotionTools = message.toolCalls?.filter((t) => isEmotionTool(t.name)) || [];
   const intimacyTools = message.toolCalls?.filter((t) => isIntimacyTool(t.name)) || [];
+  const knowledgeGraphTools = message.toolCalls?.filter((t) => isKnowledgeGraphTool(t.name)) || [];
+  const importantContextTools = message.toolCalls?.filter((t) => isImportantContextTool(t.name)) || [];
   const otherTools = message.toolCalls?.filter((t) =>
-    !isNotebookTool(t.name) && !isEmotionTool(t.name) && !isIntimacyTool(t.name)
+    !isNotebookTool(t.name) &&
+    !isEmotionTool(t.name) &&
+    !isIntimacyTool(t.name) &&
+    !isKnowledgeGraphTool(t.name) &&
+    !isImportantContextTool(t.name)
   ) || [];
 
   useEffect(() => {
@@ -50,6 +58,14 @@ export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
     >
       {notebookTools.map((tool, idx) => (
         <NotebookToolBubble key={`notebook-${idx}`} toolCall={tool} />
+      ))}
+
+      {knowledgeGraphTools.map((tool, idx) => (
+        <KnowledgeGraphToolBubble key={`kg-${idx}`} toolCall={tool} />
+      ))}
+
+      {importantContextTools.map((tool, idx) => (
+        <ImportantContextToolBubble key={`ic-${idx}`} toolCall={tool} />
       ))}
 
       {(message.content || isStreaming) && (
