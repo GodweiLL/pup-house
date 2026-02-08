@@ -11,6 +11,7 @@ const TOOL_TO_STAGE: Record<string, number> = {
   create_entity_type: 1,
   create_relation_type: 1,
   search_entities: 2,
+  semantic_search_entities: 2,
   create_entity: 2,
   get_entity: 2,
   update_entity: 2,
@@ -25,27 +26,24 @@ const STAGES = [
   { icon: Tags, label: '定义' },
   { icon: User, label: '实体' },
   { icon: Link2, label: '关联' },
-  { icon: Check, label: '完成' },
 ];
 
 interface MemoryBuildOverlayProps {
   isProcessing: boolean;
   currentTool?: string;
   isComplete?: boolean;
+  visitedStages: Set<number>;
 }
 
 export function MemoryBuildOverlay({
   isProcessing,
   currentTool,
   isComplete,
+  visitedStages,
 }: MemoryBuildOverlayProps) {
   if (!isProcessing && !isComplete) return null;
 
-  const currentStage = isComplete
-    ? 4
-    : currentTool
-    ? TOOL_TO_STAGE[currentTool] ?? 0
-    : 0;
+  const currentStage = currentTool ? TOOL_TO_STAGE[currentTool] : undefined;
 
   return (
     <motion.div
@@ -71,8 +69,8 @@ export function MemoryBuildOverlay({
         <div className="flex items-center gap-1">
           {STAGES.map((stage, idx) => {
             const Icon = stage.icon;
-            const isActive = idx === currentStage;
-            const isDone = idx < currentStage;
+            const isActive = idx === currentStage && !isComplete;
+            const isVisited = visitedStages.has(idx) || isComplete;
 
             return (
               <div key={idx} className="flex items-center">
@@ -81,24 +79,25 @@ export function MemoryBuildOverlay({
                   initial={false}
                   animate={{
                     scale: isActive ? 1.1 : 1,
-                    opacity: isDone || isActive ? 1 : 0.4,
+                    opacity: isVisited || isActive ? 1 : 0.4,
                   }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                   className={cn(
                     'flex flex-col items-center gap-1',
                     isActive && 'text-primary',
-                    isDone && 'text-green-500',
-                    !isActive && !isDone && 'text-gray-400'
+                    isVisited && !isActive && 'text-green-500',
+                    !isActive && !isVisited && 'text-gray-400'
                   )}
                 >
                   <div
                     className={cn(
                       'w-8 h-8 rounded-full flex items-center justify-center transition-colors',
                       isActive && 'bg-primary/10',
-                      isDone && 'bg-green-50',
-                      !isActive && !isDone && 'bg-gray-100'
+                      isVisited && !isActive && 'bg-green-50',
+                      !isActive && !isVisited && 'bg-gray-100'
                     )}
                   >
-                    {isDone ? (
+                    {isVisited && !isActive ? (
                       <Check className="w-4 h-4" />
                     ) : (
                       <Icon className={cn('w-4 h-4', isActive && 'animate-pulse')} />
@@ -107,14 +106,9 @@ export function MemoryBuildOverlay({
                   <span className="text-[10px] font-medium">{stage.label}</span>
                 </motion.div>
 
-                {/* 连接线 */}
+                {/* 连接线 - 静态灰色 */}
                 {idx < STAGES.length - 1 && (
-                  <div
-                    className={cn(
-                      'w-4 h-0.5 mx-0.5 mt-[-12px] transition-colors',
-                      idx < currentStage ? 'bg-green-300' : 'bg-gray-200'
-                    )}
-                  />
+                  <div className="w-4 h-0.5 mx-0.5 mt-[-12px] bg-gray-200" />
                 )}
               </div>
             );

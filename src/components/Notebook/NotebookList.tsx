@@ -34,6 +34,7 @@ export function NotebookList({ threadId }: NotebookListProps) {
     isProcessing,
     currentTool,
     isComplete,
+    visitedStages,
     buildMemory,
   } = useMemoryAgent(threadId);
 
@@ -258,6 +259,7 @@ export function NotebookList({ threadId }: NotebookListProps) {
             isProcessing={isProcessing}
             currentTool={currentTool || undefined}
             isComplete={isComplete}
+            visitedStages={visitedStages}
           />
         )}
       </AnimatePresence>

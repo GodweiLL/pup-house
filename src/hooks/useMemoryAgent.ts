@@ -5,6 +5,23 @@ import type { NotebookEntry, WSMessageType } from '@/types';
 
 const WS_BASE = process.env.NEXT_PUBLIC_WS_BASE || 'ws://localhost:8000';
 
+// 工具到阶段的映射
+const TOOL_TO_STAGE: Record<string, number> = {
+  list_entity_types: 0,
+  list_relation_types: 0,
+  create_entity_type: 1,
+  create_relation_type: 1,
+  search_entities: 2,
+  semantic_search_entities: 2,
+  create_entity: 2,
+  get_entity: 2,
+  update_entity: 2,
+  delete_entity: 2,
+  create_relation: 3,
+  get_entity_relations: 3,
+  delete_relation: 3,
+};
+
 interface MemoryAgentState {
   isProcessing: boolean;
   currentTool: string | null;
@@ -20,6 +37,7 @@ export function useMemoryAgent(threadId: string) {
     isComplete: false,
     error: null,
   });
+  const [visitedStages, setVisitedStages] = useState<Set<number>>(new Set());
 
   const buildMemory = useCallback(async (notebookContent: NotebookEntry[]) => {
     if (!threadId || notebookContent.length === 0) {
@@ -28,6 +46,7 @@ export function useMemoryAgent(threadId: string) {
     }
 
     setState({ isProcessing: true, currentTool: null, isComplete: false, error: null });
+    setVisitedStages(new Set());
 
     return new Promise<void>((resolve, reject) => {
       const ws = new WebSocket(`${WS_BASE}/memory/ws/${threadId}`);
@@ -46,6 +65,10 @@ export function useMemoryAgent(threadId: string) {
 
           switch (data.type) {
             case 'tool_call':
+              const stage = TOOL_TO_STAGE[data.name];
+              if (stage !== undefined) {
+                setVisitedStages(prev => new Set(prev).add(stage));
+              }
               setState(s => ({ ...s, currentTool: data.name }));
               break;
 
@@ -87,10 +110,12 @@ export function useMemoryAgent(threadId: string) {
       wsRef.current = null;
     }
     setState({ isProcessing: false, currentTool: null, isComplete: false, error: null });
+    setVisitedStages(new Set());
   }, []);
 
   return {
     ...state,
+    visitedStages,
     buildMemory,
     cancel,
   };
