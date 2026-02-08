@@ -1,22 +1,45 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { Message } from '@/types';
 import { cn } from '@/lib/utils';
 import { NotebookToolBubble, isNotebookTool } from './NotebookToolBubble';
 import { EmotionToolBubble, isEmotionTool } from './EmotionToolBubble';
+import { usePetStore } from '@/stores/petStore';
 
 interface MessageBubbleProps {
   message: Message;
   isStreaming?: boolean;
 }
 
+function isIntimacyTool(name: string): boolean {
+  return name === 'increase_intimacy' || name === 'decrease_intimacy';
+}
+
 export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
   const isUser = message.role === 'user';
+  const triggerAffinityChange = usePetStore((s) => s.triggerAffinityChange);
+  const processedTools = useRef<Set<string>>(new Set());
 
   const notebookTools = message.toolCalls?.filter((t) => isNotebookTool(t.name)) || [];
   const emotionTools = message.toolCalls?.filter((t) => isEmotionTool(t.name)) || [];
-  const otherTools = message.toolCalls?.filter((t) => !isNotebookTool(t.name) && !isEmotionTool(t.name)) || [];
+  const intimacyTools = message.toolCalls?.filter((t) => isIntimacyTool(t.name)) || [];
+  const otherTools = message.toolCalls?.filter((t) =>
+    !isNotebookTool(t.name) && !isEmotionTool(t.name) && !isIntimacyTool(t.name)
+  ) || [];
+
+  useEffect(() => {
+    intimacyTools.forEach((tool) => {
+      const toolKey = `${message.id}-${tool.name}-${tool.args.amount}`;
+      if (processedTools.current.has(toolKey)) return;
+      processedTools.current.add(toolKey);
+
+      const amount = tool.args.amount as number;
+      const delta = tool.name === 'increase_intimacy' ? amount : -amount;
+      triggerAffinityChange(delta);
+    });
+  }, [intimacyTools, message.id, triggerAffinityChange]);
 
   return (
     <div

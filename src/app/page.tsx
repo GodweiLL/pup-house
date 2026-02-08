@@ -19,25 +19,27 @@ export default function Home() {
   const [threadId, setThreadId] = useState('');
   const mood = usePetStore((s) => s.mood);
   const resetMood = usePetStore((s) => s.resetMood);
+  const fetchIntimacy = usePetStore((s) => s.fetchIntimacy);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const currentThinking = useChatStore((s) => s.currentThinking);
   const clearMessages = useChatStore((s) => s.clearMessages);
   const clearEntries = useNotebookStore((s) => s.clearEntries);
 
   useEffect(() => {
-    // 每次刷新都生成新的 thread_id
     const newId = generateThreadId();
     setThreadId(newId);
     resetMood();
-  }, [resetMood]);
+    fetchIntimacy();
+  }, [resetMood, fetchIntimacy]);
 
   const handleNewChat = useCallback(() => {
     const newId = generateThreadId();
     clearMessages();
     clearEntries();
     resetMood();
+    fetchIntimacy();
     setThreadId(newId);
-  }, [clearMessages, clearEntries, resetMood]);
+  }, [clearMessages, clearEntries, resetMood, fetchIntimacy]);
 
   if (!threadId) {
     return (
